@@ -2,11 +2,13 @@ angular.module('application', ['aux', 'ngRoute'])
     .config(function ($routeProvider, NumberProvider) {
         console.log("application config")
 
+
         var originalWhen = $routeProvider.when;
         $routeProvider.when = function (path, route) {
             route.resolve || (route.resolve = {});
             angular.extend(route.resolve, {
                 CurrentUser: function ($location) {
+                    console.log("start resolving");
 
                     //$location.path('/infos');
                     return 'mourad';
@@ -21,6 +23,8 @@ angular.module('application', ['aux', 'ngRoute'])
                 controller: "mainController",
                 resolve: {
                     data: function ($q, $timeout) {
+
+
 
                         var deferred = $q.defer();
                         var promise = deferred.promise;
@@ -39,8 +43,15 @@ angular.module('application', ['aux', 'ngRoute'])
             });
 
     })
-    .run(function (AuxService) {
+    .run(function ($rootScope, AuxService) {
         console.log("application run")
+
+        $rootScope.$on( "$routeChangeStart", function(event, next, current) {
+
+                console.log(event);
+            });
+
+
         AuxService.test();
     })
 

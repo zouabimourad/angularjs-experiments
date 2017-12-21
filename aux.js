@@ -1,3 +1,4 @@
+
 angular.module('aux', ['ngRoute'])
     .config(function ($routeProvider) {
         console.log("aux config")
@@ -14,7 +15,8 @@ angular.module('aux', ['ngRoute'])
     })
 
 
-angular.module('aux')
+angular
+    .module('aux')
     .factory('AuxService', function (Number) {
         return {
             test: function () {
