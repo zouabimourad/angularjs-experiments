@@ -1,67 +1,69 @@
-angular.module('application', ['aux', 'ngRoute'])
-    .config(function ($routeProvider, NumberProvider) {
-        console.log("application config")
+angular.module('application', ['aux', 'ui.router']).config(function ($stateProvider, $urlRouterProvider) {
 
+        $urlRouterProvider.otherwise('/');
 
-        var originalWhen = $routeProvider.when;
-        $routeProvider.when = function (path, route) {
-            route.resolve || (route.resolve = {});
-            angular.extend(route.resolve, {
-                CurrentUser: function ($location) {
-                    console.log("start resolving");
+        $stateProvider.state({
+            name : 'home',
+            url: '/',
+            templateUrl: "main.html",
+            controller: "mainController",
+            data : {
 
-                    //$location.path('/infos');
-                    return 'mourad';
-                }
-            });
-            return originalWhen.call($routeProvider, path, route);
-        };
+                roles : []
+            },
+            resolve: {
+                data: function ($q, $timeout) {
 
-        $routeProvider
-            .when("/", {
-                templateUrl: "main.html",
-                controller: "mainController",
-                resolve: {
-                    data: function ($q, $timeout) {
+                    var deferred = $q.defer();
+                    var promise = deferred.promise;
 
-
-
-                        var deferred = $q.defer();
-                        var promise = deferred.promise;
-
-                        $timeout(function () {
-                            deferred.resolve("mfx");
-                        }, 100);
-
+                    $timeout(function() {
                         deferred.resolve("mfx");
-                        return promise;
-                    }
-                }
-            })
-            .when("/infos", {
-                templateUrl: "infos.html"
-            });
+                    }, 100);
 
-    })
-    .run(function ($rootScope, AuxService) {
+                    return promise;
+                }
+            }
+        }).state({
+            name : 'unauth',
+            url: '/unauth',
+            templateUrl: "unauth.html",
+
+        });
+
+    }).run(function ($rootScope, $transitions, AuxService, AuthService) {
+
         console.log("application run")
 
-        $rootScope.$on( "$routeChangeStart", function(event, next, current) {
+        $transitions.onBefore({}, function(trans) {
 
-                console.log(event);
+            console.log("auth check start.")
+
+            const stateService = trans.router.stateService;
+            const data = trans.to().data;
+
+            return AuthService.isAuthenticated().then( function (r) {
+                console.log("auth check end.")
+
+                if (data && data.roles)
+
+                    return stateService.target('unauth');
+                else return r;
+
             });
 
+        });
 
         AuxService.test();
-    })
 
+    });
 
-angular.module('application').controller('mainController', function ($scope, data, CurrentUser) {
+angular.module('application').controller('mainController', function ($scope, data) {
 
     console.log(data);
-
     $scope.data = data;
-    $scope.user = CurrentUser;
+    $scope.user = '';
+    $scope.personx ={test : "ddddddd"};
 
 });
 
